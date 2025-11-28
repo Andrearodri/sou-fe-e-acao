@@ -1,7 +1,5 @@
 {
-  "buildCommand": "flutter build web --release",
+  "buildCommand": "echo 'Serving pre-built Flutter web app'",
   "outputDirectory": "build/web",
-  "installCommand": "flutter pub get",
-  "framework": "vite",
-  "regions": ["sfo1"]
+  "public": true
 }
