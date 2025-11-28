@@ -1,5 +1,3 @@
 {
-  "buildCommand": "echo 'Serving pre-built Flutter web app'",
-  "outputDirectory": "build/web",
-  "public": true
+  "outputDirectory": "build/web"
 }
