@@ -3,12 +3,5 @@
   "outputDirectory": "build/web",
   "installCommand": "flutter pub get",
   "framework": "vite",
-  "env": {
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_ANON_KEY": "@supabase_anon_key"
-  },
-  "regions": ["sfo1"],
-  "github": {
-    "silent": true
-  }
+  "regions": ["sfo1"]
 }
