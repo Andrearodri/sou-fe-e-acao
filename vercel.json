@@ -2,7 +2,7 @@
   "buildCommand": "flutter build web --release",
   "outputDirectory": "build/web",
   "installCommand": "flutter pub get",
-  "framework": "other",
+  "framework": "vite",
   "env": {
     "SUPABASE_URL": "@supabase_url",
     "SUPABASE_ANON_KEY": "@supabase_anon_key"
