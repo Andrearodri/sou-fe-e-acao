@@ -1,5 +1,5 @@
 name: vida_com_cristo
-description: App cristão com Bíblia, devocional diário, orações e comunidade
+description: MVP Flutter Web de uma plataforma cristã digital com autenticação Supabase.
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -34,12 +34,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/
-    - assets/audio/
-  fonts:
-    - family: Poppins
-      fonts:
-        - asset: assets/fonts/Poppins-Regular.ttf
-        - asset: assets/fonts/Poppins-Bold.ttf
-          weight: 700

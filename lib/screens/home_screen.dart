@@ -1,56 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/auth_provider.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vida com Cristo'),
         actions: [
           IconButton(
+            tooltip: 'Sair',
             icon: const Icon(Icons.logout),
-            onPressed: () => context.read<AuthProvider>().signOut(),
+            onPressed: auth.isLoading ? null : () => auth.signOut(),
           ),
         ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 880),
+          child: ListView(
+            padding: const EdgeInsets.all(24),
             children: [
-              const Icon(Icons.book, size: 64, color: Colors.blue),
-              const SizedBox(height: 20),
-              const Text(
+              const Icon(Icons.book_outlined, size: 56, color: Colors.blue),
+              const SizedBox(height: 16),
+              Text(
                 'Bem-vindo ao Vida com Cristo',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               const Text(
-                'Seu app de devocional cristão completo com Bíblia, orações e comunidade',
-                style: TextStyle(fontSize: 16),
+                'Sua conta está conectada. Os conteúdos abaixo estão em '
+                'preparação e ainda não estão disponíveis.',
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
-              GridView(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
+              if (auth.error != null) ...[
+                const SizedBox(height: 16),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(auth.error!,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error)),
                 ),
-                shrinkWrap: true,
-                children: [
-                  _buildCard('Bíblia', Icons.book),
-                  _buildCard('Devocional', Icons.calendar_today),
-                  _buildCard('Orações', Icons.favorite),
-                  _buildCard('Comunidade', Icons.people),
-                ],
-              ),
+              ],
+              const SizedBox(height: 24),
+              _buildCard('Bíblia', Icons.book_outlined),
+              _buildCard('Devocional', Icons.calendar_today_outlined),
+              _buildCard('Orações', Icons.favorite_border),
+              _buildCard('Comunidade', Icons.people_outline),
             ],
           ),
         ),
@@ -60,17 +63,11 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildCard(String title, IconData icon) {
     return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: () {},
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: Colors.blue),
-            const SizedBox(height: 10),
-            Text(title, textAlign: TextAlign.center),
-          ],
-        ),
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: const Text('Em breve'),
+        enabled: false,
       ),
     );
   }

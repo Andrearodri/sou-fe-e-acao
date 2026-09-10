@@ -1,173 +1,164 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final _supabase = Supabase.instance.client;
-  User? _user;
-  bool _isLoading = false;
-  String? _error;
+  AuthProvider({SupabaseClient? client})
+      : _supabase = client ?? Supabase.instance.client {
+    _session = _supabase.auth.currentSession;
+    _subscription = _supabase.auth.onAuthStateChange.listen(
+      (data) {
+        _session = data.session;
+        _error = null;
+        _notify();
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        _error = 'Não foi possível atualizar a sessão. Tente entrar novamente.';
+        _notify();
+      },
+    );
+  }
 
-  User? get user => _user;
-  bool get isAuthenticated => _user != null;
+  final SupabaseClient _supabase;
+  late final StreamSubscription<AuthState> _subscription;
+  Session? _session;
+  bool _isLoading = false;
+  bool _disposed = false;
+  String? _error;
+  String? _message;
+
+  User? get user => _session?.user;
+  bool get isAuthenticated => _session != null;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get message => _message;
 
-  AuthProvider() {
-    _initializeAuth();
-  }
+  bool _isValidEmail(String email) =>
+      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+          .hasMatch(email);
 
-  void _initializeAuth() {
-    _user = _supabase.auth.currentUser;
-    _supabase.auth.onAuthStateChange.listen((data) {
-      _user = data.session?.user;
-      _error = null;
-      notifyListeners();
-    });
-  }
-
-  /// Valida se o email eh valido
-  bool _isValidEmail(String email) {
-    final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    );
-    return emailRegex.hasMatch(email);
-  }
-
-  /// Valida se a senha atende aos criterios minimos
   String? _validatePassword(String password) {
     if (password.length < 6) {
-      return 'Senha deve ter no minimo 6 caracteres';
+      return 'Senha deve ter no mínimo 6 caracteres.';
     }
     if (!password.contains(RegExp(r'[0-9]'))) {
-      return 'Senha deve conter pelo menos um numero';
+      return 'Senha deve conter pelo menos um número.';
     }
     if (!password.contains(RegExp(r'[a-z]'))) {
-      return 'Senha deve conter pelo menos uma letra minuscula';
+      return 'Senha deve conter pelo menos uma letra minúscula.';
     }
     return null;
   }
 
-  /// Signup com validacao completa
-  Future<bool> signUp(String email, String password, String passwordConfirm) async {
+  bool _start() {
+    if (_isLoading) return false;
     _isLoading = true;
     _error = null;
-    notifyListeners();
+    _message = null;
+    _notify();
+    return true;
+  }
 
-    // Validacao 1: Email vazio
-    if (email.isEmpty) {
-      _error = 'Email nao pode estar vazio';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+  bool _reject(String message) {
+    _error = message;
+    _isLoading = false;
+    _notify();
+    return false;
+  }
 
-    // Validacao 2: Email valido
-    if (!_isValidEmail(email)) {
-      _error = 'Email invalido. Use um formato correto (ex: seu@email.com)';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-    // Validacao 3: Senha vazia
-    if (password.isEmpty) {
-      _error = 'Senha nao pode estar vazia';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-    // Validacao 4: Forca da senha
+  Future<bool> signUp(
+    String email,
+    String password,
+    String passwordConfirm,
+  ) async {
+    if (!_start()) return false;
+    email = email.trim();
+    if (email.isEmpty) return _reject('E-mail não pode estar vazio.');
+    if (!_isValidEmail(email)) return _reject('E-mail inválido.');
+    if (password.isEmpty) return _reject('Senha não pode estar vazia.');
     final passwordError = _validatePassword(password);
-    if (passwordError != null) {
-      _error = passwordError;
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-    // Validacao 5: Confirmacao de senha
-    if (password != passwordConfirm) {
-      _error = 'Senhas nao conferem';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    if (passwordError != null) return _reject(passwordError);
+    if (password != passwordConfirm) return _reject('Senhas não conferem.');
 
     try {
-      final response = await _supabase.auth.signUpWithPassword(
+      final response = await _supabase.auth.signUp(
         email: email,
         password: password,
       );
-      _user = response.user;
-      _isLoading = false;
-      notifyListeners();
+      // A returned user alone does not grant access when confirmation is pending.
+      _session = response.session;
+      if (_session == null) {
+        _message = 'Se o cadastro puder ser concluído, você receberá um e-mail '
+            'de confirmação. Verifique sua caixa de entrada antes de entrar.';
+      }
       return true;
-    } catch (e) {
-      _error = 'Erro ao cadastrar: ${e.toString()}';
-      _isLoading = false;
-      notifyListeners();
+    } catch (_) {
+      _error = 'Não foi possível concluir o cadastro. Verifique os dados '
+          'e sua conexão e tente novamente.';
       return false;
+    } finally {
+      _isLoading = false;
+      _notify();
     }
   }
 
-  /// Login com validacao completa
   Future<bool> signIn(String email, String password) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    // Validacao 1: Email vazio
-    if (email.isEmpty) {
-      _error = 'Email nao pode estar vazio';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-    // Validacao 2: Email valido
-    if (!_isValidEmail(email)) {
-      _error = 'Email invalido';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-
-    // Validacao 3: Senha vazia
-    if (password.isEmpty) {
-      _error = 'Senha nao pode estar vazia';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    if (!_start()) return false;
+    email = email.trim();
+    if (email.isEmpty) return _reject('E-mail não pode estar vazio.');
+    if (!_isValidEmail(email)) return _reject('E-mail inválido.');
+    if (password.isEmpty) return _reject('Senha não pode estar vazia.');
 
     try {
       final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
-      _user = response.user;
-      _isLoading = false;
-      notifyListeners();
+      _session = response.session;
+      if (_session == null) {
+        _error = 'Não foi possível iniciar uma sessão. Tente novamente.';
+        return false;
+      }
       return true;
-    } catch (e) {
-      _error = 'Email ou senha incorretos. Tente novamente.';
-      _isLoading = false;
-      notifyListeners();
+    } catch (_) {
+      _error = 'Não foi possível entrar. Verifique e-mail, senha, '
+          'confirmação do cadastro e conexão.';
       return false;
+    } finally {
+      _isLoading = false;
+      _notify();
     }
   }
 
-  /// Logout
   Future<void> signOut() async {
+    if (!_start()) return;
     try {
       await _supabase.auth.signOut();
-      _user = null;
-      _error = null;
-      notifyListeners();
-    } catch (e) {
-      _error = 'Erro ao sair: ${e.toString()}';
-      notifyListeners();
+      _session = null;
+    } catch (_) {
+      _error =
+          'Não foi possível sair. Verifique sua conexão e tente novamente.';
+    } finally {
+      _isLoading = false;
+      _notify();
     }
+  }
+
+  void clearFeedback() {
+    _error = null;
+    _message = null;
+    _notify();
+  }
+
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _subscription.cancel();
+    super.dispose();
   }
 }
