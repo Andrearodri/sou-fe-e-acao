@@ -21,7 +21,10 @@ void main() {
       requests.add(request);
       return handler(request);
     });
-    auth = AuthProvider(client: client);
+    auth = AuthProvider(
+      client: client,
+      baseUriProvider: () => Uri.parse('https://soufeeacao.pages.dev/'),
+    );
   });
 
   tearDown(() async {
@@ -62,6 +65,8 @@ void main() {
     expect(payload['email'], fixtureEmail);
     expect(payload['password'], fixturePassword);
     expect(payload.containsKey('passwordConfirm'), isFalse);
+    expect(requests.single.url.queryParameters['redirect_to'],
+        'https://soufeeacao.pages.dev');
   });
 
   test('signup with a returned session authenticates', () async {

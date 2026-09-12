@@ -1,56 +1,125 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
 import 'providers/auth_provider.dart';
+import 'providers/today_provider.dart';
+import 'screens/app_shell.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   const config = SupabaseConfig();
-  final error = config.validationError;
-  if (error != null) {
-    runApp(ConfigurationErrorApp(message: error));
-    return;
+  SupabaseClient? authClient;
+  if (config.validationError == null) {
+    try {
+      await Supabase.initialize(url: config.url, anonKey: config.anonKey);
+      authClient = Supabase.instance.client;
+    } catch (_) {
+      authClient = null;
+    }
   }
-  try {
-    await Supabase.initialize(url: config.url, anonKey: config.anonKey);
-    runApp(const MyApp());
-  } catch (_) {
-    runApp(const ConfigurationErrorApp(
-      message: 'Não foi possível iniciar a autenticação. Verifique a conexão '
-          'e a configuração de SUPABASE_URL e SUPABASE_ANON_KEY.',
-    ));
-  }
+  runApp(MyApp(authClient: authClient));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({this.authClient, super.key});
+  final SupabaseClient? authClient;
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+      create: (_) => AuthProvider(client: widget.authClient),
       child: MaterialApp(
         title: 'Vida com Cristo',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
-        home: const AuthWrapper(),
+        theme: _buildTheme(Brightness.light),
+        darkTheme: _buildTheme(Brightness.dark),
+        themeMode: _themeMode,
+        home: const AuthWrapper(guestFirst: true),
       ),
     );
   }
+
+  ThemeData _buildTheme(Brightness brightness) {
+    final dark = brightness == Brightness.dark;
+    final scheme = ColorScheme.fromSeed(
+      seedColor: Color(dark ? 0xFF7BA370 : 0xFF4A6741),
+      brightness: brightness,
+    ).copyWith(
+      primary: Color(dark ? 0xFF7BA370 : 0xFF4A6741),
+      primaryContainer: Color(dark ? 0xFF1E2A1C : 0xFFE8F0E6),
+      surface: Color(dark ? 0xFF1A1A24 : 0xFFFFFFFF),
+      onSurface: Color(dark ? 0xFFF0F0F5 : 0xFF1A1A2E),
+      onSurfaceVariant: Color(dark ? 0xFF9CA3AF : 0xFF6B7280),
+      secondary: Color(dark ? 0xFFD4A574 : 0xFFC4956A),
+      tertiary: Color(dark ? 0xFFD4A574 : 0xFFC4956A),
+    );
+    final base = ThemeData(
+      brightness: brightness,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: Color(dark ? 0xFF0F0F14 : 0xFFFAFAF8),
+      useMaterial3: true,
+    );
+    return base.copyWith(
+      textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
+            bodyColor: Color(dark ? 0xFFF0F0F5 : 0xFF1A1A2E),
+            displayColor: Color(dark ? 0xFFF0F0F5 : 0xFF1A1A2E),
+          ),
+      cardTheme: CardThemeData(
+        color: Color(dark ? 0xFF1A1A24 : 0xFFFFFFFF),
+        margin: const EdgeInsets.only(bottom: 16),
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Color(dark ? 0xFF1A1A24 : 0xFFFFFFFF),
+        indicatorColor: Color(dark ? 0xFF1E2A1C : 0xFFE8F0E6),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Color(dark ? 0xFF1A1A24 : 0xFFFFFFFF),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  void setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
+  const AuthWrapper({this.guestFirst = true, super.key});
+  final bool guestFirst;
 
   @override
   Widget build(BuildContext context) {
-    return context.watch<AuthProvider>().isAuthenticated
-        ? const HomeScreen()
-        : const AuthScreen();
+    if (!guestFirst) {
+      final content = context.watch<AuthProvider>().isAuthenticated
+          ? const HomeScreen()
+          : const AuthScreen();
+      return content is HomeScreen
+          ? ChangeNotifierProvider(
+              create: (_) => TodayProvider(),
+              child: content,
+            )
+          : content;
+    }
+    final state = context.findAncestorStateOfType<_MyAppState>();
+    return AppShell(onThemeModeChanged: state?.setThemeMode);
   }
 }
 

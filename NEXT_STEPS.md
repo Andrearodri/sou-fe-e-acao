@@ -1,10 +1,12 @@
 # Próximos passos do MVP
 
-1. Configurar Supabase Auth e entrega de confirmação por e-mail.
-2. Homologar cadastro, confirmação, login, recarga e logout com conta controlada.
-3. Gerar o build com a configuração real.
-4. Publicar no Cloudflare Pages e configurar o domínio somente após autorização.
-5. Implementar gradualmente os cards marcados como **Em breve**.
+1. Homologar Supabase Auth e entrega de confirmação por e-mail.
+2. Gerar o build com a configuração real quando a conta for necessária.
+3. Publicar no Cloudflare Pages e configurar o domínio somente após autorização.
+4. Implementar persistência local durável do perfil, preferências e progresso.
+5. Implementar Bíblia licenciada e Orações privadas em fases separadas.
 
 Os detalhes, comandos e limites estão no [README](README.md).
-O aplicativo não possui Bíblia completa, comunidade, áudio ou modo offline.
+O aplicativo ainda não possui Bíblia completa, CRUD de orações, comunidade,
+áudio, sincronização ou modo offline. O acesso guest-first e as quatro áreas
+principais já estão implementados.

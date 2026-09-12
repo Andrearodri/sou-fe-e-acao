@@ -8,6 +8,10 @@ flutter analyze
 flutter test
 ```
 
+O aplicativo abre em modo visitante. A Home Hoje mostra a rotina e o progresso
+semanal em memória; a mesma rotina não pode ser contabilizada duas vezes no dia.
+As áreas Bíblia e Orações informam honestamente o que ainda está em preparação.
+
 O formulário de cadastro inclui confirmação de senha. A senha exige no mínimo
 seis caracteres, uma letra minúscula e um número. Dados inválidos são bloqueados
 antes da requisição de cadastro.

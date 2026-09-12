@@ -34,7 +34,7 @@ void main() {
   Future<void> showApp(WidgetTester tester) async {
     await tester.pumpWidget(ChangeNotifierProvider.value(
       value: auth,
-      child: const MaterialApp(home: AuthWrapper()),
+      child: const MaterialApp(home: AuthWrapper(guestFirst: false)),
     ));
   }
 
@@ -73,21 +73,18 @@ void main() {
           find.widgetWithText(TextField, 'Senha'), fixturePassword);
       await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
       await tester.pumpAndSettle();
-      expect(find.text('Bem-vindo ao Vida com Cristo'), findsOneWidget);
-      for (final title in ['Bíblia', 'Devocional', 'Orações', 'Comunidade']) {
-        await tester.scrollUntilVisible(find.text(title), 160);
-        final tileFinder = find.widgetWithText(ListTile, title);
-        final tile = tester.widget<ListTile>(tileFinder);
-        expect(tile.enabled, isFalse);
-        expect(tile.onTap, isNull);
-        expect(find.descendant(of: tileFinder, matching: find.text('Em breve')),
-            findsOneWidget);
-      }
+      expect(find.textContaining('👋'), findsOneWidget);
+      expect(find.text('Seu ritmo nesta semana'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Concluir rotina de hoje'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Concluir rotina de hoje'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.byTooltip('Sair'));
+      await auth.signOut();
       await tester.pumpAndSettle();
       expect(find.widgetWithText(ElevatedButton, 'Entrar'), findsOneWidget);
-      expect(find.byTooltip('Sair'), findsNothing);
     });
   }
 

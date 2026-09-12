@@ -6,36 +6,49 @@ conteúdos e experiências de fé.
 
 ## Status
 
-O MVP contém cadastro, login, logout e uma tela inicial protegida por sessão.
-Os fluxos são cobertos por testes com o cliente Supabase e respostas HTTP
-simuladas. A autenticação com um projeto Supabase real, entrega de e-mail e
-persistência de sessão no navegador ainda precisam de homologação antes da produção.
+O MVP abre diretamente em **Hoje**, sem exigir login. Ele apresenta saudação,
+data, progresso semanal em memória, conteúdo editorial provisório claramente
+identificado e uma ação de conclusão diária. Bíblia e Orações têm telas
+informativas; os recursos completos ainda não estão disponíveis.
 
-Bíblia, Devocional, Orações e Comunidade aparecem como **Em breve**.
-Os cards estão desabilitados e não simulam conteúdo ou navegação.
+Cadastro, login e logout continuam disponíveis em **Mais** quando o Supabase
+está configurado. O Auth é opcional para abrir o conteúdo público e os fluxos
+são cobertos por testes com respostas HTTP simuladas.
+
+O progresso desta fase dura somente a sessão atual. Não há sincronização, CRUD
+de orações, texto bíblico completo ou comunidade.
 Áudio, notificações e funcionamento offline não estão implementados.
 
 Domínio planejado: **soufeeacao.com.br**. O domínio não indica um deploy concluído.
 
 ## Funcionalidades implementadas
 
+- Acesso guest-first à Home **Hoje**, sem login obrigatório.
+- Navegação responsiva entre Hoje, Bíblia, Orações e Mais.
+- Saudação, data, progresso gentil de `X de 7 dias` e conclusão idempotente da rotina.
+- Cards de devocional e versículo provisórios, sem apresentar conteúdo não revisado como publicação.
+- Tema claro e escuro para a sessão, com Inter na interface e Merriweather no conteúdo editorial.
 - Cadastro por e-mail e senha, com confirmação de senha na interface.
 - Validação de e-mail e senha: mínimo de seis caracteres, letra minúscula e número.
 - Aviso de confirmação por e-mail quando o Supabase não retorna uma sessão.
 - Login e logout com Supabase Auth.
-- Acesso à home somente quando existe uma sessão; observação de mudanças de sessão.
+- Acesso à conta opcional em Mais; observação de mudanças de sessão.
 - Feedback de carregamento e falhas sem exibir detalhes internos do backend.
 - Formulário com largura limitada e home rolável para telas pequenas e grandes.
 - Configuração de build por `--dart-define`, com mensagem clara se estiver ausente.
 
-Não há modo visitante, tabelas próprias, storage, backend Node ou funções server-side.
+Não há tabelas próprias, storage, backend Node ou funções server-side. A Bíblia
+e as Orações ainda são placeholders profissionais, sem dados reais persistidos.
 
 ## Arquitetura
 
 ```mermaid
 flowchart LR
-    A[Flutter Web] --> B[Supabase Auth]
-    A -. Roadmap: ainda não implementado .-> C[Conteúdo persistido futuro]
+    A[Flutter Web] --> B[Hoje • Bíblia • Orações • Mais]
+    B --> C[Progresso em memória da sessão]
+    B -. acesso opcional .-> D[Supabase Auth]
+    D -. confirmação .-> E[SMTP Resend]
+    B -. fases futuras .-> F[Conteúdo local e dados sincronizados]
 ```
 
 `lib/screens` contém as telas; `lib/providers/auth_provider.dart` coordena
@@ -103,9 +116,10 @@ Arquivos `.env*` estão ignorados e não são carregados automaticamente pelo Fl
 6. Testar com conta controlada: cadastro, confirmação, login, recarga de página,
    logout e tentativa de acesso após logout.
 
-O MVP utiliza **somente Auth**. Não é necessário criar tabelas, migrations,
-buckets ou políticas RLS de conteúdo agora. Tabelas futuras deverão ter RLS e
-políticas por usuário antes de serem acessadas pelo navegador.
+O MVP utiliza **somente Auth** e o conteúdo público não depende de login. Não é
+necessário criar tabelas, migrations, buckets ou políticas RLS de conteúdo agora.
+Tabelas futuras deverão ter RLS e políticas por usuário antes de serem acessadas
+pelo navegador.
 
 Referências oficiais:
 [URLs de autenticação](https://supabase.com/docs/guides/auth/redirect-urls) e
@@ -157,8 +171,8 @@ Uma eventual automação futura deverá considerar essa escolha.
 ## Testes e limites
 
 A suíte cobre validações, configuração ausente ou inválida, rejeição de chaves
-privilegiadas, cadastro com e sem sessão, login, logout, falhas HTTP, envio duplicado
-e telas em dimensões mobile e desktop.
+privilegiadas, cadastro com e sem sessão, login, logout, falhas HTTP, envio duplicado,
+navegação guest-first, progresso idempotente e telas em dimensões mobile e desktop.
 
 Os testes não usam contas reais nem enviam e-mails. Aprovação desses testes e do
 build não comprova a configuração externa de produção.
@@ -168,7 +182,9 @@ Recuperação de senha, exclusão de conta e conteúdos de fé ficam fora deste 
 
 - Homologar Supabase Auth, e-mail e sessão no navegador.
 - Publicar o MVP no domínio planejado após autorização.
-- Implementar gradualmente os recursos sinalizados como Em breve.
+- Implementar o Reader Mode local com tradução licenciada.
+- Implementar orações privadas com persistência local segura.
+- Avaliar sincronização opcional com RLS e consentimento.
 - Avaliar recuperação de senha e gestão de conta na próxima etapa.
 
 Não há screenshots de uma implantação real disponíveis nesta preparação.

@@ -151,7 +151,12 @@ class _AuthScreenState extends State<AuthScreen> {
     if (success && mounted) {
       _passwordController.clear();
       _passwordConfirmController.clear();
-      if (!auth.isAuthenticated) setState(() => _isSignUp = false);
+      if (auth.isAuthenticated) {
+        final navigator = Navigator.of(context);
+        if (navigator.canPop()) navigator.pop();
+      } else {
+        setState(() => _isSignUp = false);
+      }
     }
   }
 }

@@ -4,24 +4,38 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthProvider extends ChangeNotifier {
-  AuthProvider({SupabaseClient? client})
-      : _supabase = client ?? Supabase.instance.client {
-    _session = _supabase.auth.currentSession;
-    _subscription = _supabase.auth.onAuthStateChange.listen(
-      (data) {
-        _session = data.session;
-        _error = null;
-        _notify();
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        _error = 'Não foi possível atualizar a sessão. Tente entrar novamente.';
-        _notify();
-      },
-    );
+  AuthProvider({SupabaseClient? client, Uri Function()? baseUriProvider})
+      : _supabase = client ?? _tryGetClient(),
+        _baseUriProvider = baseUriProvider ?? (() => Uri.base) {
+    final supabase = _supabase;
+    if (supabase != null) {
+      _session = supabase.auth.currentSession;
+      _subscription = supabase.auth.onAuthStateChange.listen(
+        (data) {
+          _session = data.session;
+          _error = null;
+          _notify();
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          _error =
+              'Não foi possível atualizar a sessão. Tente entrar novamente.';
+          _notify();
+        },
+      );
+    }
   }
 
-  final SupabaseClient _supabase;
-  late final StreamSubscription<AuthState> _subscription;
+  static SupabaseClient? _tryGetClient() {
+    try {
+      return Supabase.instance.client;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  final SupabaseClient? _supabase;
+  final Uri Function() _baseUriProvider;
+  StreamSubscription<AuthState>? _subscription;
   Session? _session;
   bool _isLoading = false;
   bool _disposed = false;
@@ -30,6 +44,7 @@ class AuthProvider extends ChangeNotifier {
 
   User? get user => _session?.user;
   bool get isAuthenticated => _session != null;
+  bool get isAvailable => _supabase != null;
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get message => _message;
@@ -80,11 +95,22 @@ class AuthProvider extends ChangeNotifier {
     final passwordError = _validatePassword(password);
     if (passwordError != null) return _reject(passwordError);
     if (password != passwordConfirm) return _reject('Senhas não conferem.');
+    final supabase = _supabase;
+    if (supabase == null) {
+      return _reject(
+          'A conta está indisponível no momento. Você pode continuar como visitante.');
+    }
 
     try {
-      final response = await _supabase.auth.signUp(
+      final baseUri = _baseUriProvider();
+      final emailRedirectTo = baseUri.scheme == 'http' ||
+              baseUri.scheme == 'https'
+          ? baseUri.origin
+          : null;
+      final response = await supabase.auth.signUp(
         email: email,
         password: password,
+        emailRedirectTo: emailRedirectTo,
       );
       // A returned user alone does not grant access when confirmation is pending.
       _session = response.session;
@@ -109,9 +135,14 @@ class AuthProvider extends ChangeNotifier {
     if (email.isEmpty) return _reject('E-mail não pode estar vazio.');
     if (!_isValidEmail(email)) return _reject('E-mail inválido.');
     if (password.isEmpty) return _reject('Senha não pode estar vazia.');
+    final supabase = _supabase;
+    if (supabase == null) {
+      return _reject(
+          'A conta está indisponível no momento. Você pode continuar como visitante.');
+    }
 
     try {
-      final response = await _supabase.auth.signInWithPassword(
+      final response = await supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
@@ -133,8 +164,15 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> signOut() async {
     if (!_start()) return;
+    final supabase = _supabase;
+    if (supabase == null) {
+      _session = null;
+      _isLoading = false;
+      _notify();
+      return;
+    }
     try {
-      await _supabase.auth.signOut();
+      await supabase.auth.signOut();
       _session = null;
     } catch (_) {
       _error =
@@ -158,7 +196,7 @@ class AuthProvider extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    _subscription.cancel();
+    _subscription?.cancel();
     super.dispose();
   }
 }
