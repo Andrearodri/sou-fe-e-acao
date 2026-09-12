@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../content/preview_content.dart';
-import '../providers/auth_provider.dart';
+import '../providers/local_settings_provider.dart';
 import '../providers/today_provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = context.watch<TodayProvider>();
-    final auth = context.watch<AuthProvider>();
+    final settings = context.watch<LocalSettingsProvider?>();
     final now = today.now;
     final greeting = now.hour < 12
         ? 'Bom dia'
@@ -20,11 +20,15 @@ class HomeScreen extends StatelessWidget {
             ? 'Boa tarde'
             : 'Boa noite';
     final formattedDate = _formatPortugueseDate(now);
+    final displayName = settings?.displayName.trim() ?? '';
+    final greetingLabel =
+        displayName.isEmpty ? '$greeting 👋' : '$greeting, $displayName 👋';
+    final editorialFontScale = settings?.editorialFontScale ?? 1;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       children: [
-        Text('$greeting 👋', style: Theme.of(context).textTheme.headlineSmall),
+        Text(greetingLabel, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 4),
         Text(formattedDate,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -38,6 +42,7 @@ class HomeScreen extends StatelessWidget {
           title: PreviewContent.devotionalTitle,
           body: PreviewContent.devotionalBody,
           fontFamily: GoogleFonts.merriweather().fontFamily,
+          fontScale: editorialFontScale,
         ),
         _EditorialCard(
           eyebrow: 'VERSÍCULO PROVISÓRIO',
@@ -45,6 +50,7 @@ class HomeScreen extends StatelessWidget {
           title: 'Versículo do dia',
           body: PreviewContent.verseBody,
           fontFamily: GoogleFonts.merriweather().fontFamily,
+          fontScale: editorialFontScale,
         ),
         Card(
           child: Padding(
@@ -63,9 +69,8 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
-                  onPressed: today.completedToday
-                      ? null
-                      : () => today.completeToday(),
+                  onPressed:
+                      today.completedToday ? null : () => today.completeToday(),
                   icon: Icon(today.completedToday
                       ? Icons.check_circle_outline
                       : Icons.check),
@@ -75,9 +80,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  auth.isAvailable
-                      ? 'Seu progresso fica nesta sessão por enquanto.'
-                      : 'Modo visitante: o progresso fica somente nesta sessão.',
+                  'Modo visitante: o progresso fica salvo somente neste dispositivo.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -152,8 +155,10 @@ class _ProgressCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 10,
-                backgroundColor:
-                    Theme.of(context).colorScheme.surface.withValues(alpha: .75),
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .surface
+                    .withValues(alpha: .75),
               ),
             ),
             const SizedBox(height: 10),
@@ -173,6 +178,7 @@ class _EditorialCard extends StatelessWidget {
     required this.title,
     required this.body,
     required this.fontFamily,
+    required this.fontScale,
   });
 
   final String eyebrow;
@@ -180,6 +186,7 @@ class _EditorialCard extends StatelessWidget {
   final String title;
   final String body;
   final String? fontFamily;
+  final double fontScale;
 
   @override
   Widget build(BuildContext context) {
@@ -204,22 +211,50 @@ class _EditorialCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              title,
+              style: _editorialStyle(
+                Theme.of(context).textTheme.titleLarge,
+                fontFamily,
+                fontScale,
+              ),
+            ),
             const SizedBox(height: 10),
-            Text(body,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontFamily: fontFamily,
-                      height: 1.6,
-                    )),
+            Text(
+              body,
+              style: _editorialStyle(
+                Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6),
+                fontFamily,
+                fontScale,
+              ),
+            ),
             const SizedBox(height: 12),
-            Text('Conteúdo de demonstração aguardando revisão editorial.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            Text(
+              'Conteúdo de demonstração aguardando revisão editorial.',
+              style: _editorialStyle(
+                Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
-                    )),
+                    ),
+                fontFamily,
+                fontScale,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+TextStyle? _editorialStyle(
+  TextStyle? style,
+  String? fontFamily,
+  double scale,
+) {
+  final fontSize = style?.fontSize;
+  return style?.copyWith(
+    fontFamily: fontFamily,
+    fontSize: fontSize == null ? null : fontSize * scale,
+  );
 }

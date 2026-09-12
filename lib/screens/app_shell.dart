@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/today_provider.dart';
+import '../repositories/local_progress_repository.dart';
 import 'bible_screen.dart';
 import 'home_screen.dart';
 import 'more_screen.dart';
 import 'prayers_screen.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({this.onThemeModeChanged, super.key});
-  final ValueChanged<ThemeMode>? onThemeModeChanged;
+  const AppShell({this.progressRepository, super.key});
+  final LocalProgressRepository? progressRepository;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -22,7 +23,7 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
-    _todayProvider = TodayProvider();
+    _todayProvider = TodayProvider(repository: widget.progressRepository);
   }
 
   @override
@@ -45,7 +46,7 @@ class _AppShellState extends State<AppShell> {
       const HomeScreen(),
       const BibleScreen(),
       const PrayersScreen(),
-      MoreScreen(onThemeModeChanged: widget.onThemeModeChanged),
+      const MoreScreen(),
     ];
 
     return ChangeNotifierProvider.value(

@@ -4,8 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
+import 'models/local_settings.dart';
 import 'providers/auth_provider.dart';
+import 'providers/local_settings_provider.dart';
 import 'providers/today_provider.dart';
+import 'repositories/local_progress_repository.dart';
+import 'repositories/local_settings_repository.dart';
 import 'screens/app_shell.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
@@ -26,27 +30,58 @@ Future<void> main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({this.authClient, super.key});
+  const MyApp({
+    this.authClient,
+    this.settingsRepository,
+    this.progressRepository,
+    super.key,
+  });
+
   final SupabaseClient? authClient;
+  final LocalSettingsRepository? settingsRepository;
+  final LocalProgressRepository? progressRepository;
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.light;
+  late final LocalSettingsProvider _settingsProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _settingsProvider = LocalSettingsProvider(
+      repository: widget.settingsRepository,
+    );
+  }
+
+  @override
+  void dispose() {
+    _settingsProvider.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider(client: widget.authClient),
-      child: MaterialApp(
-        title: 'Vida com Cristo',
-        debugShowCheckedModeBanner: false,
-        theme: _buildTheme(Brightness.light),
-        darkTheme: _buildTheme(Brightness.dark),
-        themeMode: _themeMode,
-        home: const AuthWrapper(guestFirst: true),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) => AuthProvider(client: widget.authClient)),
+        ChangeNotifierProvider.value(value: _settingsProvider),
+      ],
+      child: Consumer<LocalSettingsProvider>(
+        builder: (context, settings, _) => MaterialApp(
+          title: 'Vida com Cristo',
+          debugShowCheckedModeBanner: false,
+          theme: _buildTheme(Brightness.light),
+          darkTheme: _buildTheme(Brightness.dark),
+          themeMode: _themeModeFor(settings.themePreference),
+          home: AuthWrapper(
+            guestFirst: true,
+            progressRepository: widget.progressRepository,
+          ),
+        ),
       ),
     );
   }
@@ -73,9 +108,9 @@ class _MyAppState extends State<MyApp> {
     );
     return base.copyWith(
       textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
-            bodyColor: Color(dark ? 0xFFF0F0F5 : 0xFF1A1A2E),
-            displayColor: Color(dark ? 0xFFF0F0F5 : 0xFF1A1A2E),
-          ),
+        bodyColor: Color(dark ? 0xFFF0F0F5 : 0xFF1A1A2E),
+        displayColor: Color(dark ? 0xFFF0F0F5 : 0xFF1A1A2E),
+      ),
       cardTheme: CardThemeData(
         color: Color(dark ? 0xFF1A1A24 : 0xFFFFFFFF),
         margin: const EdgeInsets.only(bottom: 16),
@@ -98,12 +133,24 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
+  ThemeMode _themeModeFor(AppThemePreference preference) {
+    return switch (preference) {
+      AppThemePreference.system => ThemeMode.system,
+      AppThemePreference.light => ThemeMode.light,
+      AppThemePreference.dark => ThemeMode.dark,
+    };
+  }
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({this.guestFirst = true, super.key});
+  const AuthWrapper({
+    this.guestFirst = true,
+    this.progressRepository,
+    super.key,
+  });
+
   final bool guestFirst;
+  final LocalProgressRepository? progressRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -113,13 +160,12 @@ class AuthWrapper extends StatelessWidget {
           : const AuthScreen();
       return content is HomeScreen
           ? ChangeNotifierProvider(
-              create: (_) => TodayProvider(),
+              create: (_) => TodayProvider(repository: progressRepository),
               child: content,
             )
           : content;
     }
-    final state = context.findAncestorStateOfType<_MyAppState>();
-    return AppShell(onThemeModeChanged: state?.setThemeMode);
+    return AppShell(progressRepository: progressRepository);
   }
 }
 
