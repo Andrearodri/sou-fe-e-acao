@@ -37,9 +37,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('👋'), findsOneWidget);
-    expect(find.text('DEVOCIONAL PROVISÓRIO'), findsOneWidget);
+    expect(find.textContaining('DEVOCIONAL PROVISÓRIO'), findsOneWidget);
     await _scrollPage(tester);
-    expect(find.text('VERSÍCULO PROVISÓRIO'), findsOneWidget);
+    expect(find.textContaining('VERSÍCULO PROVISÓRIO'), findsOneWidget);
 
     for (final label in ['Bíblia', 'Orações', 'Mais', 'Hoje']) {
       await tester.tap(find.text(label).last);

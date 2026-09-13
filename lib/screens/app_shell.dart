@@ -3,14 +3,30 @@ import 'package:provider/provider.dart';
 
 import '../providers/today_provider.dart';
 import '../repositories/local_progress_repository.dart';
+import '../repositories/bible_repository.dart';
+import '../repositories/devotional_repository.dart';
+import '../repositories/local_bible_repository.dart';
+import '../repositories/local_devotional_repository.dart';
+import '../repositories/local_prayer_repository.dart';
+import '../repositories/prayer_repository.dart';
 import 'bible_screen.dart';
 import 'home_screen.dart';
 import 'more_screen.dart';
 import 'prayers_screen.dart';
 
 class AppShell extends StatefulWidget {
-  const AppShell({this.progressRepository, super.key});
+  const AppShell({
+    this.progressRepository,
+    this.bibleRepository,
+    this.devotionalRepository,
+    this.prayerRepository,
+    super.key,
+  });
+
   final LocalProgressRepository? progressRepository;
+  final BibleRepository? bibleRepository;
+  final DevotionalRepository? devotionalRepository;
+  final PrayerRepository? prayerRepository;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -18,12 +34,19 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   late final TodayProvider _todayProvider;
+  late final BibleRepository _bibleRepository;
+  late final DevotionalRepository _devotionalRepository;
+  late final PrayerRepository _prayerRepository;
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _todayProvider = TodayProvider(repository: widget.progressRepository);
+    _bibleRepository = widget.bibleRepository ?? LocalBibleRepository();
+    _devotionalRepository =
+        widget.devotionalRepository ?? LocalDevotionalRepository();
+    _prayerRepository = widget.prayerRepository ?? LocalPrayerRepository();
   }
 
   @override
@@ -43,9 +66,13 @@ class _AppShellState extends State<AppShell> {
       NavigationDestination(icon: Icon(Icons.more_horiz), label: 'Mais'),
     ];
     final screens = [
-      const HomeScreen(),
-      const BibleScreen(),
-      const PrayersScreen(),
+      HomeScreen(
+        bibleRepository: _bibleRepository,
+        devotionalRepository: _devotionalRepository,
+        onOpenBible: () => _select(1),
+      ),
+      BibleScreen(repository: _bibleRepository),
+      PrayersScreen(repository: _prayerRepository),
       const MoreScreen(),
     ];
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../content/local_bible_data.dart';
 import '../models/local_settings.dart';
 import '../providers/auth_provider.dart';
 import '../providers/local_settings_provider.dart';
@@ -51,6 +52,13 @@ class _MoreScreenState extends State<MoreScreen> {
         _AppearanceCard(settings: settings),
         _LocalDataCard(
           onClear: () => _confirmClearLocalData(settings, today),
+        ),
+        const Card(
+          child: ListTile(
+            leading: Icon(Icons.menu_book_outlined),
+            title: Text('Fonte bíblica'),
+            subtitle: Text(localBibleAttribution),
+          ),
         ),
         const Card(
           child: ListTile(

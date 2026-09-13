@@ -75,10 +75,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('👋'), findsOneWidget);
       expect(find.text('Seu ritmo nesta semana'), findsOneWidget);
-      for (var index = 0; index < 2; index++) {
-        await tester.drag(find.byType(ListView).first, const Offset(0, -500));
-        await tester.pump();
-      }
+      await tester.scrollUntilVisible(
+        find.text('Concluir rotina de hoje'),
+        500,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Concluir rotina de hoje'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await auth.signOut();
