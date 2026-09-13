@@ -1,24 +1,19 @@
-# Validação do MVP
+# Validação local
 
-Use Flutter 3.47.2 e as dependências de `pubspec.lock`:
+Use Flutter 3.47.2 e as dependências fixadas em `pubspec.lock`:
 
 ```bash
-flutter pub get --enforce-lockfile
+flutter pub get
 flutter analyze
 flutter test
+flutter build web --release
 ```
 
-O aplicativo abre em modo visitante. A Home Hoje mostra a rotina e o progresso
-semanal em memória; a mesma rotina não pode ser contabilizada duas vezes no dia.
-As áreas Bíblia e Orações informam honestamente o que ainda está em preparação.
+A suíte atual possui 41 testes e não usa contas, e-mails ou credenciais reais.
+Ela valida o modo guest, a navegação, a persistência local, a Bíblia piloto, os
+devocionais, as orações e os fluxos de Auth com fixtures sintéticas. O build sem
+`--dart-define` também deve funcionar para o CI porque o conteúdo público não
+depende de Supabase.
 
-O formulário de cadastro inclui confirmação de senha. A senha exige no mínimo
-seis caracteres, uma letra minúscula e um número. Dados inválidos são bloqueados
-antes da requisição de cadastro.
-
-Um usuário retornado sem sessão não libera acesso à home: a interface orienta
-confirmar o e-mail. Login e logout dependem do Supabase Auth configurado.
-
-A suíte usa HTTP simulado, incluindo falhas e respostas de confirmação pendente.
-Ela não valida envio de e-mail real nem a configuração da conta Supabase.
-O build e os passos de homologação manual estão no [README](README.md).
+Para validar o Auth contra um projeto real, informe somente a URL e a chave anon
+no comando por `--dart-define`; não as salve em arquivos rastreados.

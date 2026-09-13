@@ -1,12 +1,13 @@
-# Próximos passos do MVP
+# Próximos passos
 
-1. Homologar Supabase Auth e entrega de confirmação por e-mail.
-2. Gerar o build com a configuração real quando a conta for necessária.
-3. Publicar no Cloudflare Pages e configurar o domínio somente após autorização.
-4. Implementar persistência local durável do perfil, preferências e progresso.
-5. Implementar Bíblia licenciada e Orações privadas em fases separadas.
+O MVP atual já possui experiência guest-first, Bíblia piloto licenciada,
+devocionais revisados, orações privadas locais e preferências persistentes.
 
-Os detalhes, comandos e limites estão no [README](README.md).
-O aplicativo ainda não possui Bíblia completa, CRUD de orações, comunidade,
-áudio, sincronização ou modo offline. O acesso guest-first e as quatro áreas
-principais já estão implementados.
+Possíveis etapas futuras, fora do escopo atual:
+
+1. Ampliar o conteúdo bíblico somente após verificar licenciamento.
+2. Avaliar sincronização opcional de dados com consentimento e RLS.
+3. Avaliar recuperação de conta e gestão de perfil.
+
+Comunidade, feed social, chat, áudio, IA em runtime e monetização não fazem
+parte do MVP. Consulte o [README](README.md) para o estado e as limitações atuais.
