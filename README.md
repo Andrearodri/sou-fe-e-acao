@@ -148,10 +148,14 @@ O produto não se apresenta como uma plataforma completa.
 
 ## Licença
 
-Este repositório ainda não possui uma licença de código definida pelo autor.
-Visibilidade pública não concede, por si só, permissão ampla de reutilização.
-As atribuições do conteúdo bíblico de terceiros permanecem em
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+O código e o conteúdo autoral do Sou Fé e Ação permanecem com todos os direitos
+reservados. A publicação no GitHub tem finalidade de portfólio, avaliação e
+demonstração; ela não concede reutilização irrestrita. Consulte
+[LICENSE](LICENSE) para a nota completa.
+
+Componentes e conteúdos de terceiros permanecem sob suas respectivas licenças.
+O texto bíblico BLIVRE não está coberto pela reserva autoral deste projeto e
+continua sujeito à CC BY 3.0 Brasil, conforme [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Autoria
 
