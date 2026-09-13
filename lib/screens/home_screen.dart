@@ -21,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 
   final BibleRepository? bibleRepository;
   final DevotionalRepository? devotionalRepository;
-  final VoidCallback? onOpenBible;
+  final void Function(String bookId, int chapterNumber)? onOpenBible;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -138,7 +138,7 @@ class _DailyContentCards extends StatelessWidget {
 
   final _DailyContent content;
   final double fontScale;
-  final VoidCallback? onOpenBible;
+  final void Function(String bookId, int chapterNumber)? onOpenBible;
 
   @override
   Widget build(BuildContext context) {
@@ -194,9 +194,9 @@ class _DailyContentCards extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _Eyebrow(
+                _Eyebrow(
                   icon: Icons.auto_stories_outlined,
-                  text: 'DEVOCIONAL PROVISÓRIO • REVISÃO HUMANA PENDENTE',
+                  text: _editorialStatusLabel(devotional.status),
                 ),
                 const SizedBox(height: 14),
                 Text(
@@ -233,7 +233,12 @@ class _DailyContentCards extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 OutlinedButton.icon(
-                  onPressed: onOpenBible,
+                  onPressed: onOpenBible == null
+                      ? null
+                      : () => onOpenBible!(
+                            devotional.bookId,
+                            devotional.chapterNumber,
+                          ),
                   icon: const Icon(Icons.menu_book_outlined),
                   label: const Text('Abrir Bíblia'),
                 ),
@@ -258,6 +263,15 @@ class _DailyContentCards extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  String _editorialStatusLabel(EditorialStatus status) {
+    return switch (status) {
+      EditorialStatus.draft => 'DEVOCIONAL PROVISÓRIO • RASCUNHO',
+      EditorialStatus.reviewRequired =>
+        'DEVOCIONAL PROVISÓRIO • REVISÃO HUMANA PENDENTE',
+      EditorialStatus.approved => 'DEVOCIONAL PROVISÓRIO • APROVADO',
+    };
   }
 }
 

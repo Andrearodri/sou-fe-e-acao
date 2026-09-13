@@ -9,9 +9,18 @@ import '../repositories/bible_repository.dart';
 import '../repositories/local_bible_repository.dart';
 
 class BibleScreen extends StatefulWidget {
-  const BibleScreen({this.repository, super.key});
+  const BibleScreen({
+    this.repository,
+    this.initialBookId,
+    this.initialChapter,
+    this.navigationRequest = 0,
+    super.key,
+  });
 
   final BibleRepository? repository;
+  final String? initialBookId;
+  final int? initialChapter;
+  final int navigationRequest;
 
   @override
   State<BibleScreen> createState() => _BibleScreenState();
@@ -28,10 +37,29 @@ class _BibleScreenState extends State<BibleScreen> {
   void initState() {
     super.initState();
     _repository = widget.repository ?? LocalBibleRepository();
+    _selectedBookId = widget.initialBookId ?? 'joao';
+    _selectedChapter = widget.initialChapter ?? 1;
     _booksFuture = _repository.loadBooks();
     _chapterFuture = _repository.loadChapter(
       bookId: _selectedBookId,
       chapterNumber: _selectedChapter,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant BibleScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.navigationRequest == oldWidget.navigationRequest) {
+      return;
+    }
+    final bookId = widget.initialBookId ?? 'joao';
+    final chapter = widget.initialChapter ?? 1;
+    if (bookId == _selectedBookId && chapter == _selectedChapter) return;
+    _selectedBookId = bookId;
+    _selectedChapter = chapter;
+    _chapterFuture = _repository.loadChapter(
+      bookId: bookId,
+      chapterNumber: chapter,
     );
   }
 

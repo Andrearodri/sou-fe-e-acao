@@ -38,6 +38,9 @@ class _AppShellState extends State<AppShell> {
   late final DevotionalRepository _devotionalRepository;
   late final PrayerRepository _prayerRepository;
   int _selectedIndex = 0;
+  String? _bibleBookId;
+  int? _bibleChapter;
+  int _bibleNavigationRequest = 0;
 
   @override
   void initState() {
@@ -69,9 +72,14 @@ class _AppShellState extends State<AppShell> {
       HomeScreen(
         bibleRepository: _bibleRepository,
         devotionalRepository: _devotionalRepository,
-        onOpenBible: () => _select(1),
+        onOpenBible: _openBible,
       ),
-      BibleScreen(repository: _bibleRepository),
+      BibleScreen(
+        repository: _bibleRepository,
+        initialBookId: _bibleBookId,
+        initialChapter: _bibleChapter,
+        navigationRequest: _bibleNavigationRequest,
+      ),
       PrayersScreen(repository: _prayerRepository),
       const MoreScreen(),
     ];
@@ -125,4 +133,13 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _select(int index) => setState(() => _selectedIndex = index);
+
+  void _openBible(String bookId, int chapterNumber) {
+    setState(() {
+      _bibleBookId = bookId;
+      _bibleChapter = chapterNumber;
+      _bibleNavigationRequest++;
+      _selectedIndex = 1;
+    });
+  }
 }
