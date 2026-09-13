@@ -20,7 +20,7 @@ const localDevotionals = <Devotional>[
     prayer:
         'Senhor Deus, firma meus passos em Cristo e ensina-me a caminhar com '
         'confiança hoje. Amém.',
-    status: EditorialStatus.reviewRequired,
+    status: EditorialStatus.approved,
   ),
   Devotional(
     id: 'daily-02',
@@ -41,13 +41,13 @@ const localDevotionals = <Devotional>[
     prayer:
         'Deus de esperança, recebe meu coração abatido e ajuda-me a esperar em '
         'ti com sinceridade. Amém.',
-    status: EditorialStatus.reviewRequired,
+    status: EditorialStatus.approved,
   ),
   Devotional(
     id: 'daily-03',
     title: 'Sabedoria para o caminho',
     bibleReference: 'Provérbios 3:1–8',
-    verseReference: 'Provérbios 3:5–6',
+    verseReference: 'Provérbios 3:5',
     bookId: 'proverbios',
     chapterNumber: 3,
     verseNumber: 5,
@@ -62,7 +62,7 @@ const localDevotionals = <Devotional>[
     prayer:
         'Senhor, guia meus pensamentos e escolhas. Dá-me humildade para confiar '
         'em ti e sabedoria para agir com amor. Amém.',
-    status: EditorialStatus.reviewRequired,
+    status: EditorialStatus.approved,
   ),
   Devotional(
     id: 'daily-04',
@@ -84,11 +84,11 @@ const localDevotionals = <Devotional>[
     prayer:
         'Pai, obrigado pela graça revelada em Jesus. Sustenta meu recomeço com '
         'verdade, esperança e amor. Amém.',
-    status: EditorialStatus.reviewRequired,
+    status: EditorialStatus.approved,
   ),
   Devotional(
     id: 'daily-05',
-    title: 'Presença no vale',
+    title: 'Enraizados na Palavra',
     bibleReference: 'Salmos 1:1–6',
     verseReference: 'Salmos 1:3',
     bookId: 'salmos',
@@ -103,9 +103,9 @@ const localDevotionals = <Devotional>[
         'Reserve alguns minutos para ler a Escritura com atenção e escolher uma '
         'verdade que deseja praticar hoje.',
     prayer:
-        'Senhor, acompanha-me nos caminhos fáceis e difíceis. Que tua presença '
-        'me ensine a viver com coragem e cuidado. Amém.',
-    status: EditorialStatus.reviewRequired,
+        'Senhor, firma meu coração em tua Palavra e ensina-me a permanecer fiel '
+        'em teus caminhos. Que minha vida produza frutos no tempo certo. Amém.',
+    status: EditorialStatus.approved,
   ),
   Devotional(
     id: 'daily-06',
@@ -116,17 +116,19 @@ const localDevotionals = <Devotional>[
     chapterNumber: 3,
     verseNumber: 5,
     reflection:
-        'A sabedoria bíblica alcança o interior e também as escolhas práticas. '
-        'Cuidar do coração envolve prestar atenção ao que alimenta nossos '
-        'pensamentos, palavras e atitudes. Deus nos chama a um caminho de '
-        'discernimento que pode ser aprendido com constância e dependência.',
+        'Um coração ensinável reconhece que não sabe tudo. Confiar no Senhor é '
+        'abrir mão da necessidade de controlar cada resposta e aprender a '
+        'depender de sua sabedoria nas decisões do cotidiano. A humildade '
+        'diante de Deus nos torna mais atentos, responsáveis e dispostos a '
+        'corrigir o caminho.',
     application:
-        'Observe uma influência que tem moldado seu dia e escolha uma fonte de '
-        'verdade e vida para priorizar hoje.',
+        'Escolha uma decisão de hoje em que você tem confiado apenas no próprio '
+        'entendimento. Ore antes de agir e pergunte qual atitude demonstra '
+        'confiança, sabedoria e obediência a Deus.',
     prayer:
         'Deus, torna meu coração ensinável e guarda minhas palavras e escolhas. '
         'Conduze-me em teu caminho. Amém.',
-    status: EditorialStatus.reviewRequired,
+    status: EditorialStatus.approved,
   ),
   Devotional(
     id: 'daily-07',
@@ -134,8 +136,8 @@ const localDevotionals = <Devotional>[
     bibleReference: 'João 3:1–21',
     verseReference: 'João 3:16',
     bookId: 'joao',
-    chapterNumber: 15,
-    verseNumber: 5,
+    chapterNumber: 3,
+    verseNumber: 16,
     reflection:
         'Jesus conversa com Nicodemos sobre a necessidade de nascer de novo. A '
         'vida com Deus não começa pelo desempenho, mas pela graça que alcança '
@@ -146,6 +148,6 @@ const localDevotionals = <Devotional>[
         'pequena, honesta e possível para hoje.',
     prayer: 'Senhor Jesus, conduz meu coração a um novo começo pela tua graça. '
         'Ensina-me a viver com fé, verdade e esperança. Amém.',
-    status: EditorialStatus.reviewRequired,
+    status: EditorialStatus.approved,
   ),
 ];

@@ -71,7 +71,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  test('devotionals are exactly seven, deterministic, and require review',
+  test('devotionals are exactly seven, deterministic, and approved',
       () async {
     final repository = LocalDevotionalRepository();
     final all = await repository.loadAll();
@@ -79,7 +79,7 @@ void main() {
     expect(all, hasLength(7));
     expect(all.map((item) => item.id).toSet(), hasLength(7));
     expect(
-      all.every((item) => item.status == EditorialStatus.reviewRequired),
+      all.every((item) => item.status == EditorialStatus.approved),
       isTrue,
     );
 
