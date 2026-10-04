@@ -1,3 +1,7 @@
 {
-  "outputDirectory": "build/web"
+  "outputDirectory": "build/web",
+  "rewrites": [
+    { "source": "/mensagens", "destination": "/index.html" },
+    { "source": "/mensagens/:slug", "destination": "/index.html" }
+  ]
 }

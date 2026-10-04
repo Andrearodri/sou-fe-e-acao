@@ -39,20 +39,30 @@ class _MoreScreenState extends State<MoreScreen> {
       children: [
         Text('Mais', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 6),
-        Text('Preferências e acesso à sua conta',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                )),
+        Text(
+          'Preferências e acesso à sua conta',
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
         const SizedBox(height: 24),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.auto_awesome_outlined),
+            title: const Text('Mensagens'),
+            subtitle: const Text(
+              'Versículos para buscar, guardar e compartilhar',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).pushNamed('/mensagens'),
+          ),
+        ),
         _ProfileCard(
           controller: _displayNameController,
           onSave: () => _saveDisplayName(settings),
         ),
         _AccountCard(auth: auth),
         _AppearanceCard(settings: settings),
-        _LocalDataCard(
-          onClear: () => _confirmClearLocalData(settings, today),
-        ),
+        _LocalDataCard(onClear: () => _confirmClearLocalData(settings, today)),
         const Card(
           child: ListTile(
             leading: Icon(Icons.menu_book_outlined),
@@ -65,7 +75,8 @@ class _MoreScreenState extends State<MoreScreen> {
             leading: Icon(Icons.info_outline),
             title: Text('Sobre o Vida com Cristo'),
             subtitle: Text(
-                'Uma experiência acolhedora para cultivar leitura, oração e vida cristã prática.'),
+              'Uma experiência acolhedora para cultivar leitura, oração e vida cristã prática.',
+            ),
           ),
         ),
       ],
@@ -119,9 +130,8 @@ class _MoreScreenState extends State<MoreScreen> {
     _displayNameController.clear();
     _syncedDisplayName = '';
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Dados locais removidos.')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Dados locais removidos.')));
   }
 }
 
@@ -188,10 +198,13 @@ class _AccountCard extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primaryContainer,
-                  child: Icon(Icons.person_outline,
-                      color: Theme.of(context).colorScheme.primary),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer,
+                  child: Icon(
+                    Icons.person_outline,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -199,10 +212,11 @@ class _AccountCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                          auth.isAuthenticated
-                              ? 'Conta conectada'
-                              : 'Modo visitante',
-                          style: Theme.of(context).textTheme.titleMedium),
+                        auth.isAuthenticated
+                            ? 'Conta conectada'
+                            : 'Modo visitante',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         auth.isAuthenticated
@@ -226,9 +240,10 @@ class _AccountCard extends StatelessWidget {
               FilledButton.icon(
                 onPressed: auth.isAvailable
                     ? () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                              builder: (_) => const AuthScreen()),
-                        )
+                        MaterialPageRoute<void>(
+                          builder: (_) => const AuthScreen(),
+                        ),
+                      )
                     : null,
                 icon: const Icon(Icons.login),
                 label: const Text('Entrar ou criar conta'),
@@ -239,8 +254,8 @@ class _AccountCard extends StatelessWidget {
                 'Auth indisponível nesta execução; o conteúdo público continua acessível.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ],
@@ -335,8 +350,10 @@ class _LocalDataCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Dados locais',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Dados locais',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(
               'Nome, preferências e progresso ficam somente neste dispositivo até uma futura sincronização.',

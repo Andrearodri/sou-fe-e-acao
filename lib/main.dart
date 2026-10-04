@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'config/supabase_config.dart';
 import 'models/local_settings.dart';
@@ -10,12 +11,18 @@ import 'providers/local_settings_provider.dart';
 import 'providers/today_provider.dart';
 import 'repositories/local_progress_repository.dart';
 import 'repositories/local_settings_repository.dart';
+import 'repositories/local_message_repository.dart';
+import 'repositories/message_favorite_repository.dart';
+import 'repositories/message_repository.dart';
+import 'repositories/supabase_message_repository.dart';
 import 'screens/app_shell.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/messages_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   const config = SupabaseConfig();
   SupabaseClient? authClient;
   if (config.validationError == null) {
@@ -34,12 +41,14 @@ class MyApp extends StatefulWidget {
     this.authClient,
     this.settingsRepository,
     this.progressRepository,
+    this.initialRoute,
     super.key,
   });
 
   final SupabaseClient? authClient;
   final LocalSettingsRepository? settingsRepository;
   final LocalProgressRepository? progressRepository;
+  final String? initialRoute;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -47,6 +56,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final LocalSettingsProvider _settingsProvider;
+  late final MessageRepository _messageRepository;
+  late final MessageFavoriteRepository _favoriteRepository;
 
   @override
   void initState() {
@@ -54,6 +65,10 @@ class _MyAppState extends State<MyApp> {
     _settingsProvider = LocalSettingsProvider(
       repository: widget.settingsRepository,
     );
+    _messageRepository = widget.authClient == null
+        ? const LocalMessageRepository()
+        : SupabaseMessageRepository(widget.authClient!);
+    _favoriteRepository = MessageFavoriteRepository(widget.authClient);
   }
 
   @override
@@ -67,7 +82,8 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-            create: (_) => AuthProvider(client: widget.authClient)),
+          create: (_) => AuthProvider(client: widget.authClient),
+        ),
         ChangeNotifierProvider.value(value: _settingsProvider),
       ],
       child: Consumer<LocalSettingsProvider>(
@@ -77,6 +93,8 @@ class _MyAppState extends State<MyApp> {
           theme: _buildTheme(Brightness.light),
           darkTheme: _buildTheme(Brightness.dark),
           themeMode: _themeModeFor(settings.themePreference),
+          initialRoute: widget.initialRoute,
+          onGenerateRoute: _messageRoute,
           home: AuthWrapper(
             guestFirst: true,
             progressRepository: widget.progressRepository,
@@ -84,6 +102,32 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+
+  Route<dynamic>? _messageRoute(RouteSettings settings) {
+    final uri = Uri.tryParse(settings.name ?? '');
+    if (uri == null) return null;
+    if (uri.path == '/mensagens') {
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => MessagesScreen(
+          repository: _messageRepository,
+          favorites: _favoriteRepository,
+        ),
+      );
+    }
+    final segments = uri.pathSegments;
+    if (segments.length == 2 && segments.first == 'mensagens') {
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => MessageDetailsScreen(
+          slug: segments.last,
+          repository: _messageRepository,
+          favorites: _favoriteRepository,
+        ),
+      );
+    }
+    return null;
   }
 
   ThemeData _buildTheme(Brightness brightness) {
@@ -189,8 +233,10 @@ class ConfigurationErrorApp extends StatelessWidget {
                 children: [
                   const Icon(Icons.settings_outlined, size: 48),
                   const SizedBox(height: 16),
-                  const Text('Configuração necessária',
-                      style: TextStyle(fontSize: 24)),
+                  const Text(
+                    'Configuração necessária',
+                    style: TextStyle(fontSize: 24),
+                  ),
                   const SizedBox(height: 16),
                   Text(message, textAlign: TextAlign.center),
                 ],

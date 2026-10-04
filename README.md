@@ -21,6 +21,7 @@ opcional para quem desejar entrar.
 - Preferências locais para nome, tema claro/escuro e tamanho de fonte.
 - Supabase Auth opcional para cadastro, confirmação por e-mail, login e logout.
 - Interface Flutter responsiva para Web e mobile.
+- Área **Mensagens** com busca, categorias, favoritos, links diretos e arte PNG para compartilhar.
 
 ## Conteúdo bíblico
 
@@ -52,11 +53,14 @@ flowchart LR
   Local --> Progress[LocalProgressRepository]
 ```
 
-O conteúdo bíblico piloto e os devocionais ficam no aplicativo. `shared_preferences`
+O conteúdo bíblico piloto, os devocionais e um pequeno catálogo inicial de mensagens
+ficam no aplicativo. `shared_preferences`
 persiste apenas dados não sensíveis — nome local, aparência, tamanho de fonte e
 progresso. `flutter_secure_storage` é usado exclusivamente para as orações.
-No estado atual, o Supabase é utilizado somente pelo Auth; não há tabelas,
-Storage, Edge Functions ou sincronização de orações.
+O Supabase também pode servir mensagens publicadas e sincronizar favoritos de
+usuários autenticados após aplicar [a migration de mensagens](supabase/migrations/20261003000100_messages.sql).
+Os favoritos dos visitantes ficam apenas no dispositivo e não são migrados
+automaticamente ao entrar. As orações continuam exclusivamente locais.
 
 ## Stack
 
@@ -97,6 +101,8 @@ continua funcionando.
 
 - O texto das orações não é enviado ao Supabase, a serviços de IA ou a
   analytics pelo aplicativo.
+- A cópia, o compartilhamento e o PNG das mensagens são gerados no dispositivo;
+  não há registro de interações ou telemetria neste módulo.
 - As orações usam `flutter_secure_storage`; no Web, isso depende das garantias
   do navegador, WebCrypto e HTTPS. O pacote requer HTTPS ou `localhost` nessa
   plataforma.
@@ -127,9 +133,9 @@ flutter test
 flutter build web --release
 ```
 
-Atualmente, a suíte possui 41 testes. Ela cobre Auth com fixtures sintéticas,
+A suíte cobre Auth com fixtures sintéticas,
 configuração de Supabase, modo guest, persistência local, navegação, Bíblia
-piloto, devocionais, orações e progresso diário idempotente. O workflow de CI
+piloto, devocionais, orações, mensagens e progresso diário idempotente. O workflow de CI
 executa os mesmos checks sem credenciais de produção.
 
 ## Estado do projeto
@@ -143,6 +149,8 @@ O produto não se apresenta como uma plataforma completa.
 - A Bíblia é um piloto e não contém os 66 livros.
 - Há somente uma tradução no piloto.
 - Não existe sincronização de orações entre dispositivos.
+- O catálogo offline de mensagens é limitado aos versículos BLIVRE já presentes
+  no piloto; mensagens extras publicadas no banco exigem conexão para aparecer.
 - Não há comunidade, feed social, chat, áudio, IA em runtime ou monetização.
 - O armazenamento no Web tem limites inerentes ao navegador e ao dispositivo.
 
